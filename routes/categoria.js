@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+var cors = require('cors');
 
 const Categoria = require('../models/categoria');//importamos el schema
 
@@ -12,7 +13,7 @@ const Categoria = require('../models/categoria');//importamos el schema
 //GET
 //-------------------------
 
-app.get('/categoria',(req,res)=>{
+app.get('/categoria',cors(),(req,res)=>{
 
     Categoria.find({})
         .sort('nombre')
