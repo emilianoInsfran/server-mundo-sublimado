@@ -13,7 +13,7 @@ const Categoria = require('../models/categoria');//importamos el schema
 //GET
 //-------------------------
 
-app.get('/categoria',cors(),(req,res)=>{
+app.get('/categoria',(req,res)=>{
 
     Categoria.find({})
         .sort('nombre')
