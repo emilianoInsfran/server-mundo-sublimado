@@ -8,7 +8,7 @@ console.log("NODE_ENV",process.env.NODE_ENV);
 if(process.env.NODE_ENV == 'dev'){
   urlDB = 'mongodb://localhost:27017/elmundodelsublimado';
 }else{
-    urlDB = process.env.MONGO_URI;
+  urlDB = 'mongodb://emiliano1:emiliano123@ds015924.mlab.com:15924/elmundodelsublimado';
 }
 
 
