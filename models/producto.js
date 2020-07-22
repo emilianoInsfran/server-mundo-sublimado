@@ -5,12 +5,11 @@ var uniqueValidator = require('mongoose-unique-validator');
 let productoSchema = new Schema({
     id_admin:Number,
     id_catalogo:{
-        type:Number,
+        type:String,
         required:[true,"El id catageroría es obligatorio"]
     },
     nombre:{
         type: String,
-        unique:'El nombre de la producto no puede repetir',
         required:[true,'El nombre es necesario']
     },
     descripcion:{

@@ -1,4 +1,5 @@
 require('./config/config');
+const path = require('path');
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -23,6 +24,11 @@ app.use((req, res, next) => {
 
 
 app.use(require('./routes/index'));
+
+app.use(express.static(path.resolve(__dirname , '/uploads/producto')));
+
+console.log("===>",path.join(__dirname , '/uploads/producto'))
+
 
 mongoose.set('useFindAndModify', false);
 
