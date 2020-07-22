@@ -85,13 +85,16 @@ function cargaImagenes(img,res,productoObj){
 //-------------------------
 
 app.post('/producto',(req,res)=>{
+    console.log(path.resolve(__dirname, '/uploads/producto/432.jpg'));
+
+    res.sendFile(path.resolve(__dirname, '/uploads/producto/432.jpg'));
     
-    let productoObj = req.body;
+   /* let productoObj = req.body;
     let imagenCargada = req.files;
     console.log("productoObj",productoObj);
     console.log("imagenCargada",imagenCargada);
 
-    cargaImagenes(imagenCargada.upload,res,productoObj);
+    cargaImagenes(imagenCargada.upload,res,productoObj);*/
 });
 
 
@@ -134,7 +137,12 @@ function postProducto(nombreImagen,productoObj,res){
             })
         }
         //res.sendFile(path.join(__dirname, '/uploads/producto/432.jpg'));
-        res.sendFile(path.resolve(__dirname, '/uploads/producto/432.jpg'));
+
+        /*
+              res.json({
+            ok:true,
+            producto: productoBD
+        })*/
 
     })
 
