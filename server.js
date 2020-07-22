@@ -12,6 +12,8 @@ app.use(bodyParser.urlencoded({extended:true}));
 
 app.use(bodyParser.json());
 
+
+app.use('/media',express.static( path.resolve( __dirname, 'uploads')));
 app.use(cors());
 
 app.use((req, res, next) => {
@@ -25,9 +27,8 @@ app.use((req, res, next) => {
 
 app.use(require('./routes/index'));
 
-app.use(express.static(path.resolve(__dirname , '/uploads/producto')));
 
-console.log("===>",path.join(__dirname , '/uploads/producto'))
+console.log("===>",path.join(__dirname, 'uploads'))
 
 
 mongoose.set('useFindAndModify', false);
