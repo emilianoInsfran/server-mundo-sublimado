@@ -21,7 +21,7 @@
     "express-fileupload": "^1.1.7-alpha.4",
     "mongoose": "^5.9.24",
     "mongoose-unique-validator": "^2.0.3",
-    "nodemailer": "^6.4.10",
+    "nodemailer": "^6.4.11",
     "nodemon": "^2.0.4"
   }
 }

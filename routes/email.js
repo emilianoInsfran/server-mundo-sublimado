@@ -5,55 +5,72 @@ const nodemailer=require('nodemailer')
 
 const app=express()
 
-
 app.post('/mailer',(req,res)=>{
-    console.log("ENTRO EN EL EMAIL");
-    let transporter = nodemailer.createTransport({
-      service: 'outlook',
-      //configurar el email de la entidad que manda el mail, user y pass
-      auth: {
-        user: 'sublimadodelmundo@gmail.com',
-        pass: 'sublimados123'
-      }, 
-      tls: {
-        rejectUnauthorized: false
-      } 
-    })
-  //cambia los datos emi
-    let mailoptions = {
-        //aca el email de sublimados
-      from: 'sublimadodelmundo@gmail.com',
-      //el email a donde queres que llegue
-      to: 'sublimadodelmundo@gmail.com',
-      subject: 'sublimadodelmundo@gmail.com',
-      html: `
-      <strong>Nombre:</strong> ${req.body.name} <br/>
-      <strong>Tell:</strong> ${req.body.tell} <br/>
-      <strong>E-mail:</strong> ${req.body.email} <br/>
-      <strong>Mensaje:</strong> ${req.body.text}
-      `
-    }
-  
-    transporter.sendMail(mailoptions, (error, info) => {
-        if (error) {
-            console.log(`${error}`);
-             res.json({
-                ok:false,
-                message:'No se pudo mandar el email',
-                error
-            })
-        }
-        else {
-          console.log(info);
-          res.json({
-            ok:true,
-            message:'Se mando el email correctamente',
-            info
-        })
-          
-        }
+  console.log("ENTRO -> 11")
+  let testAccount = nodemailer.createTestAccount();
+
+  // create reusable transporter object using the default SMTP transport
+  let transporter = nodemailer.createTransport({
+    host: "imap.gmail.com",
+    service: 'gmail',
+    port: 993,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: 'sublimadodelmundo@gmail.com', // generated ethereal user
+      pass: 'sublimados123', // generated ethereal password
+    },
+  });
+
+  // send mail with defined transport object
+  let info = transporter.sendMail({
+    from:"sublimadodelmundo@gmail.com", // sender address
+    to: "sublimadodelmundo@gmail.com", // list of receivers
+    subject: "Hello ✔", // Subject line
+    text: "Hello world?", // plain text body
+    html: `
+    <strong>Nombre:</strong> ${req.body.name} <br/>
+    <strong>Tell:</strong> ${req.body.tell} <br/>
+    <strong>E-mail:</strong> ${req.body.email} <br/>
+    <strong>Mensaje:</strong> ${req.body.text}
+    `, // html body
+  },(error, info) => {
+    if (error) {
+      res.status(500).json({
+        ok:false,
+        error,
+        message:'No se pudo mandar mensaje, intente mas tarde nuevamente'
       })
+    console.log(`${error}`)}
+  else {
+    console.log(info) 
+    res.json({
+      ok:true,
+      info,
+      message:'Mensaje Enviado!'
     })
+  }
+  });
+
+
+  /*transporter.sendMail(info, (error, info) => {
+    if (error) {
+        res.status(500).json({
+          ok:false,
+          error,
+          message:'No se pudo mandar mensaje, intente mas tarde nuevamente'
+        })
+      console.log(`${error}`)}
+    else {
+      console.log(info) 
+      res.status(500).json({
+        ok:true,
+        info,
+        message:'Mensaje Enviado!'
+      })
+    }
+  })*/
+  // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+})
 
 
 module.exports = app;
