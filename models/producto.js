@@ -16,9 +16,17 @@ let productoSchema = new Schema({
         type:String,
         required:[false]
     },
+    subTitulo:{
+        type: String,
+        required:[false]
+    },
+    detalle:{
+        type:String,
+        required:[false]
+    },
     disponible:{
         type:Boolean,
-        default:true
+        default:false
     },
     stock:{
         type:Number,

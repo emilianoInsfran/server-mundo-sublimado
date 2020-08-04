@@ -41,6 +41,28 @@ app.get('/producto/:id',(req,res)=>{
         });
 });
 
+app.get('/novedades',(req,res)=>{
+    let id_catalogo = req.params.id;
+
+    console.log("producto: ",id_catalogo);
+
+    Producto.find({disponible:true})
+        .sort('nombre')
+        .exec((err,producto)=>{
+            if ( err ) {
+                return res.status(500).json({
+                    ok:false,
+                    err
+                })
+            }
+
+            res.json({
+                ok:true,
+                producto
+            })
+        });
+});
+
 //-------------------------
 //Carga de Imagenes
 //-------------------------
@@ -85,31 +107,27 @@ function cargaImagenes(img,res,productoObj){
 //-------------------------
 
 app.post('/producto',(req,res)=>{
-    console.log('=>',path.join(__dirname, '/uploads/producto/432.jpg'));
-
-    res.sendFile(path.join(__dirname, '/uploads/producto/432.jpg'));
-    
-   /* let productoObj = req.body;
+   let productoObj = req.body;
     let imagenCargada = req.files;
     console.log("productoObj",productoObj);
     console.log("imagenCargada",imagenCargada);
 
-    cargaImagenes(imagenCargada.upload,res,productoObj);*/
+    postProducto(productoObj,res);
 });
 
 
-function postProducto(nombreImagen,productoObj,res){
-
-    console.log("nombre imagen",nombreImagen)
+function postProducto(productoObj,res){
 
     let producto = new Producto({
         id_admin:1,
-        id_catalogo:productoObj.id_catalogo || 1,//categoria
-        nombre: productoObj.nombre || 'asd',
+        id_catalogo:productoObj.id_catalogo,//categoria
+        nombre: productoObj.nombre,
         descripcion: productoObj.descripcion,
+        subTitulo: productoObj.subTitulo,
+        detalle: productoObj.detalle,
         disponible: productoObj.disponible,
         stock: productoObj.stock,
-        img: nombreImagen
+        img: productoObj.nombreImg
     });
 
 
@@ -136,13 +154,11 @@ function postProducto(nombreImagen,productoObj,res){
                 err
             })
         }
-        //res.sendFile(path.join(__dirname, '/uploads/producto/432.jpg'));
 
-        /*
-              res.json({
+        res.json({
             ok:true,
             producto: productoBD
-        })*/
+        })
 
     })
 
@@ -159,18 +175,22 @@ app.put('/producto/:id',(req,res)=>{
     let id =req.params.id;
     let productoObj = req.body;
 
+    if(productoObj.eliminar == 'true') borraArchivo('producto',productoObj.oldnombreImagen);
+
     let producto = {
         id_admin:1,
         id_catalogo:productoObj.id_catalogo,
         nombre: productoObj.nombre,
         descripcion: productoObj.descripcion,
+        subTitulo: productoObj.subTitulo,
+        detalle: productoObj.detalle,
         disponible: productoObj.disponible,
         stock: productoObj.stock,
-        img: productoObj.img
+        img: productoObj.nombreImg
     };
 
     console.log("id", id)
-    console.log("productoObj", productoObj)
+    console.log("producto save", producto)
 /*
 
    new: true, //devuelve el objeto actualizado
@@ -202,6 +222,18 @@ app.put('/producto/:id',(req,res)=>{
     })
 
 });
+
+function borraArchivo(tipo,nombreImagen){
+    console.log("nombreImagen",nombreImagen)
+    tipo='producto';
+    //consulta si existe la ruta de la imagen - .resolve() construye un path
+    let pathImagen = path.resolve(__dirname,`../uploads/producto/${nombreImagen}`);
+
+    if ( fs.existsSync(pathImagen) ) {//verifica si existe
+        console.log('EXISTE');
+        fs.unlinkSync(pathImagen);//elimina la imagen del path 
+    }
+}
 
 
 app.put('/novedades',(req,res)=>{

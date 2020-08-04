@@ -14,6 +14,7 @@ app.use(bodyParser.json());
 
 
 app.use('/media',express.static( path.resolve( __dirname, 'uploads')));
+
 app.use(cors());
 
 app.use((req, res, next) => {
@@ -26,10 +27,6 @@ app.use((req, res, next) => {
 
 
 app.use(require('./routes/index'));
-
-
-console.log("===>",path.join(__dirname, 'uploads'))
-
 
 mongoose.set('useFindAndModify', false);
 
@@ -47,8 +44,5 @@ mongoose.connect(process.env.URLDB,{
 app.listen(process.env.PORT ,()=>{
     console.log('escuchando el puerto',process.env.PORT);
 });
-
-
-
 
 
