@@ -13,10 +13,13 @@ var upload = multer({ dest: 'uploads/' })
 
 //const Categoria = require('./categoria');
 
+var busboy = require('connect-busboy');
+app.use(busboy());
+
 app.use(fileUpload());//fileUpload es un middleware , todos los archivos que se cargen  van en req.file
 
 //-------------------------
-// Hacemos una ABM de producto
+// Hacemos una ABM de slide
 //-------------------------
 
 //-------------------------
@@ -96,15 +99,6 @@ function cargaImagenes(img,res,slide){
 //POST
 //-------------------------
 
-app.post('/slide2', upload.single('slide'), function (req, res, next) {
-    // req.file is the `avatar` file
-    console.log('IMAGEN DE PRUBA=>', req.files);
-    console.log('PATH DE PRUBA=>', req.files.path);
-    console.log('body DE PRUBA=>', req.body);
-    // req.body will hold the text fields, if there were any
-})
-   
-
 app.post('/slide',(req,res)=>{
     
     let data = req.body;
@@ -119,6 +113,22 @@ app.post('/slide',(req,res)=>{
     //subirImagen(imagenCargada.upload,res,slideObj);
 
 });
+
+app.post('/test',(req,res)=>{
+    let categoriaObj = req.body;
+    let imagenCargada = req.files;
+
+    console.log("categoriaObj2",categoriaObj);
+    console.log("imagenCargada2",imagenCargada);
+
+    res.json({
+        ok:true,
+    })
+
+    //postCategoria(res,categoriaObj)
+    // cargaImagenes(imagenCargada.upload,res,categoriaObj);
+ }); 
+
 
 function subirImagen(img,res,slideObj,rutaImg){
 

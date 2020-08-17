@@ -1,5 +1,4 @@
 const express = require('express');
-const fileUpload = require('express-fileupload');
 const app = express();
 
 const fs = require('fs');//filesystem
@@ -7,7 +6,6 @@ const path = require('path');
 
 const Producto = require('../models/producto');//importamos el schema
 
-app.use(fileUpload());//fileUpload es un middleware , todos los archivos que se cargen  van en req.file
 
 
 //-------------------------
@@ -68,7 +66,7 @@ app.get('/novedades',(req,res)=>{
 //-------------------------
 
 
-function cargaImagenes(img,res,productoObj){
+function cargaImagenes(img,productoObj,res,section,idPut){
     console.log("Estoy cargando la Imagen",img);
 
     let extensionesValidas = ['png','jpg','gif','jpeg'];
@@ -88,6 +86,7 @@ function cargaImagenes(img,res,productoObj){
     }
 
     nombreArchivo = `${ new Date().getMilliseconds() }.${ extension }`;
+    let ruta = `./uploads/producto/${ nombreArchivo }`;
 
     img.mv(`./uploads/producto/${ nombreArchivo }`,(err) =>{
         console.log("ERROR!",err);
@@ -98,7 +97,8 @@ function cargaImagenes(img,res,productoObj){
             })
         }
 
-        postProducto(nombreArchivo,productoObj,res)
+        if(section=='post') postProducto(img,nombreArchivo,res,productoObj,ruta);
+        else putProducto(img,nombreArchivo,res,productoObj,ruta,idPut)
     });
 }
 
@@ -112,11 +112,11 @@ app.post('/producto',(req,res)=>{
     console.log("productoObj",productoObj);
     console.log("imagenCargada",imagenCargada);
 
-    postProducto(productoObj,res);
+    cargaImagenes(imagenCargada.upload,productoObj,res,'post');
 });
 
 
-function postProducto(productoObj,res){
+function postProducto(img,nombreArchivo,res,productoObj,rutaImg){
 
     let producto = new Producto({
         id_admin:1,
@@ -127,43 +127,56 @@ function postProducto(productoObj,res){
         detalle: productoObj.detalle,
         disponible: productoObj.disponible,
         stock: productoObj.stock,
-        img: productoObj.nombreImg
+        img: nombreArchivo,
+        nameImg: nombreArchivo,
+        size: img.size,
+        mimetype: img.mimetype,
     });
 
 
     console.log("producto", producto);
 
-    producto.save((err,productoBD)=>{
-        console.log("err", err);
-        console.log("productoBD", productoBD);
+    Producto.base64_encode(rutaImg)
+        .then((base64) => {
+        //console.log("ENTRO A BASE 64",base64);
+            producto['base64'] = base64;
 
-        if ( err ) 
-        {
-            return res.status(500).json({//error de datos
-                ok:false,
-                message: err.errors.nombre.properties.message,
-                err
+            //console.log("NUEVO slide", slide);
+
+            producto.save((err,productoBD)=>{
+                console.log("err", err);
+                console.log("productoBD", productoBD);
+        
+                if ( err ) 
+                {
+                    return res.status(500).json({//error de datos
+                        ok:false,
+                        message: err.errors.nombre.properties.message,
+                        err
+                    })
+                }
+        
+                if( !productoBD )//no se creo la producto
+                {
+                    return res.status(400).json({
+                        ok:false,
+                        message: err.Error,
+                        err
+                    })
+                }
+        
+                res.json({
+                    ok:true,
+                    producto: productoBD
+                })
+        
             })
-        }
-
-        if( !productoBD )//no se creo la producto
-        {
-            return res.status(400).json({
-                ok:false,
-                message: err.Error,
-                err
-            })
-        }
-
-        res.json({
-            ok:true,
-            producto: productoBD
-        })
-
+    
     })
 
-
 }
+
+
 
 //-------------------------
 //PUT
@@ -174,8 +187,54 @@ app.put('/producto/:id',(req,res)=>{
 
     let id =req.params.id;
     let productoObj = req.body;
+    let imagenCargada = req.files;
+
+    console.log("categoria =>>>>>", productoObj)
+    console.log("imagenCargada =>>>>>", imagenCargada)
+
 
     if(productoObj.eliminar == 'true') borraArchivo('producto',productoObj.oldnombreImagen);
+    if(imagenCargada != null) cargaImagenes(imagenCargada.upload,productoObj,res,'put',id);
+    else putCategoriaDescription(res,productoObj,id);
+});
+
+function putCategoriaDescription(res,productoObj,id){
+    console.log("entro en el otro put",productoObj)
+    let producto = {
+        id_catalogo:productoObj.id_catalogo,
+        nombre: productoObj.nombre,
+        descripcion: productoObj.descripcion,
+        subTitulo: productoObj.subTitulo,
+        detalle: productoObj.detalle
+    };
+
+
+    Producto.findByIdAndUpdate(id,producto,{new:true,runValidators:true, context: 'query'},(err,categoriaBD)=>{
+        
+        if( err ){
+            return res.status(500).json({
+                ok:false,
+                err
+            })
+        }
+
+        if( !categoriaBD ){
+            return res.status(400).json({
+                ok:false,
+                err
+            })
+        }
+
+        res.json({
+            ok:true,
+            categoriaBD
+        })
+
+
+    })
+}
+
+function putProducto(img,nombreArchivo,res,productoObj,rutaImg,id){
 
     let producto = {
         id_admin:1,
@@ -184,9 +243,10 @@ app.put('/producto/:id',(req,res)=>{
         descripcion: productoObj.descripcion,
         subTitulo: productoObj.subTitulo,
         detalle: productoObj.detalle,
-        disponible: productoObj.disponible,
-        stock: productoObj.stock,
-        img: productoObj.nombreImg
+        img: productoObj.nombreImg,
+        nameImg: nombreArchivo,
+        size: img.size,
+        mimetype: img.mimetype,
     };
 
     console.log("id", id)
@@ -197,31 +257,41 @@ app.put('/producto/:id',(req,res)=>{
     runValidators: true, //aplica las validaciones del esquema del modelo
     context: 'query' //necesario para las disparar las validaciones de mongoose-unique-validator
 */
-    Producto.findByIdAndUpdate(id,producto,{new:true,runValidators:true, context: 'query'},(err,productoBD)=>{
+
+    Producto.base64_encode(rutaImg)
+        .then((base64) => {
+        //console.log("ENTRO A BASE 64",base64);
+            producto['base64'] = base64;
+
+            //console.log("NUEVO slide", slide);
+
+            Producto.findByIdAndUpdate(id,producto,{new:true,runValidators:true, context: 'query'},(err,productoBD)=>{
         
-        if( err ){
-            return res.status(500).json({
-                ok:false,
-                err
+                if( err ){
+                    return res.status(500).json({
+                        ok:false,
+                        err
+                    })
+                }
+        
+                if( !productoBD ){
+                    return res.status(400).json({
+                        ok:false,
+                        err
+                    })
+                }
+        
+                res.json({
+                    ok:true,
+                    productoBD
+                })
+        
+        
             })
-        }
-
-        if( !productoBD ){
-            return res.status(400).json({
-                ok:false,
-                err
-            })
-        }
-
-        res.json({
-            ok:true,
-            productoBD
-        })
-
 
     })
 
-});
+}
 
 function borraArchivo(tipo,nombreImagen){
     console.log("nombreImagen",nombreImagen)
