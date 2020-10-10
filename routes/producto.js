@@ -194,7 +194,7 @@ app.put('/producto/:id',(req,res)=>{
 
 
     if(productoObj.eliminar == 'true') borraArchivo('producto',productoObj.oldnombreImagen);
-    if(imagenCargada != null) cargaImagenes(imagenCargada.upload,productoObj,res,'put',id);
+    if(productoObj.eliminar == 'true') cargaImagenes(imagenCargada.upload,productoObj,res,'put',id);
     else putCategoriaDescription(res,productoObj,id);
 });
 
